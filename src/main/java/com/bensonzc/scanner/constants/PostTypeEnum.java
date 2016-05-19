@@ -4,7 +4,7 @@ package com.bensonzc.scanner.constants;
  * Created by zhangchen on 16/5/18.
  */
 public enum PostTypeEnum {
-    SALE("[出让]"),BUY("[求购]");
+    SALE("[出让]"),BUY("[求购]"),FAST_TRADE("[快速交易]");
 
     private String alias;
 

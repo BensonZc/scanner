@@ -1,5 +1,6 @@
 package com.bensonzc.scanner.processor;
 
+import com.bensonzc.scanner.constants.Constants;
 import com.bensonzc.scanner.constants.PostTypeEnum;
 import org.apache.commons.lang3.StringUtils;
 import us.codecraft.webmagic.Page;
@@ -11,25 +12,39 @@ import java.util.List;
  */
 public class AcToysProcessor extends AbstractProcessor {
 
-    private PostTypeEnum postType;
+    /**
+     * 帖子类型：求购，出售，快速交易
+     */
+    private PostTypeEnum[] postTypes;
+    /**
+     * postTypeXpath：帖子类型的xpath
+     * postTitleXpath：帖子标题的xpath
+     * postContentXpath：帖子内容的xpath
+     */
+    private final static String postTypeXpath = "//h1[@class='read_h1']/a/text()";
+    private final static String postTitleXpath = "//h1[@class='read_h1']/text()";
+    private final static String postContentXpath = "//div[@id='read_tpc']/text()";
 
-    public AcToysProcessor(PostTypeEnum postType, List<String> keyWords){
+    public AcToysProcessor(List<String> keyWords, PostTypeEnum... postTypes){
         super(keyWords);
-        this.postType = postType;
+        this.postTypes = postTypes;
     }
 
     @Override
     public void process(Page page) {
-        String type = page.getHtml().xpath("//h1[@class='read_h1']/a/text()").toString();
-        String postTitle = page.getHtml().xpath("//h1[@class='read_h1']/text()").toString();
-        String postContent = page.getHtml().xpath("//div[@id='read_tpc']/text()").toString();
-        System.out.println("type-------" + type);
-//        System.out.println("post content-------" + postContent);
-        if(StringUtils.isBlank(type) || postType.getAlias().equals(type)){
-//            //满足类型的帖子
-            System.out.println("post title-------" + postTitle);
+        String type = page.getHtml().xpath(postTypeXpath).toString();
+        String postTitle = page.getHtml().xpath(postTitleXpath).toString();
+        String postContent = page.getHtml().xpath(postContentXpath).toString();
+        boolean isPostTypeMatch = false;
+        for(PostTypeEnum postType : postTypes){
+            if(postType.getAlias().equals(type)){
+                isPostTypeMatch = true;
+            }
+        }
+        if(isPostTypeMatch || postTitle.contains(Constants.SALE)){
+            //满足类型的帖子
             if(isMatchPost(postTitle, postContent)){
-                System.out.println("满足的url----------" + page.getUrl());
+                page.putField("url", page.getUrl());
             }
         }
         page.addTargetRequests(page.getHtml().$(".subject_t").links().all());
