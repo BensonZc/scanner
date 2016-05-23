@@ -2,10 +2,13 @@ package com.bensonzc.scanner.processor;
 
 import com.bensonzc.scanner.constants.Constants;
 import com.bensonzc.scanner.constants.PostTypeEnum;
+import com.bensonzc.scanner.system.ScannerConfig;
 import org.apache.commons.lang3.StringUtils;
 import us.codecraft.webmagic.Page;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by zhangchen on 16/5/17.
@@ -25,6 +28,8 @@ public class AcToysProcessor extends AbstractProcessor {
     private final static String postTitleXpath = "//h1[@class='read_h1']/text()";
     private final static String postContentXpath = "//div[@id='read_tpc']/text()";
 
+    private Set<String> posts = new HashSet<String>();
+
     public AcToysProcessor(List<String> keyWords, PostTypeEnum... postTypes){
         super(keyWords);
         this.postTypes = postTypes;
@@ -32,6 +37,11 @@ public class AcToysProcessor extends AbstractProcessor {
 
     @Override
     public void process(Page page) {
+        if(page.getUrl().toString().equals(ScannerConfig.url)){
+            System.out.println("---------------start page---------------" + System.currentTimeMillis());
+//            page.addTargetRequests(page.getHtml().$(".subject_t").links().all());
+            return;
+        }
         String type = page.getHtml().xpath(postTypeXpath).toString();
         String postTitle = page.getHtml().xpath(postTitleXpath).toString();
         String postContent = page.getHtml().xpath(postContentXpath).toString();
@@ -47,7 +57,6 @@ public class AcToysProcessor extends AbstractProcessor {
                 page.putField("url", page.getUrl());
             }
         }
-        page.addTargetRequests(page.getHtml().$(".subject_t").links().all());
     }
 
     private boolean isMatchPost(String postTitle, String postContent){
