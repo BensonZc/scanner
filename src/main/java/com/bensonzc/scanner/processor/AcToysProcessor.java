@@ -6,6 +6,7 @@ import com.bensonzc.scanner.system.ScannerConfig;
 import org.apache.commons.lang3.StringUtils;
 import us.codecraft.webmagic.Page;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +28,8 @@ public class AcToysProcessor extends AbstractProcessor {
     private final static String postTypeXpath = "//h1[@class='read_h1']/a/text()";
     private final static String postTitleXpath = "//h1[@class='read_h1']/text()";
     private final static String postContentXpath = "//div[@id='read_tpc']/text()";
+    private final static String hotPostsXpath = "//tr[@class='tr3']/td[@class='icon']/a[@title='热门主题']";
+    private final static String openPostsXpath = "//tr[@class='tr3']/td[@class='icon']/a[@title='开放主题']";
 
     private Set<String> posts = new HashSet<String>();
 
@@ -39,7 +42,12 @@ public class AcToysProcessor extends AbstractProcessor {
     public void process(Page page) {
         if(page.getUrl().toString().equals(ScannerConfig.url)){
             System.out.println("---------------start page---------------" + System.currentTimeMillis());
-//            page.addTargetRequests(page.getHtml().$(".subject_t").links().all());
+            List<String> hotPosts = page.getHtml().xpath(hotPostsXpath).all();
+            List<String> openPosts = page.getHtml().xpath(openPostsXpath).all();
+            posts.addAll(hotPosts);
+            posts.addAll(openPosts);
+
+            page.addTargetRequests(new ArrayList<String>(posts));
             return;
         }
         String type = page.getHtml().xpath(postTypeXpath).toString();
